@@ -1,0 +1,6 @@
+*/resources
+*/results/
+
+*.pyc
+
+.DS_Store
