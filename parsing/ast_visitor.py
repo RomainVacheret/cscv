@@ -5,10 +5,11 @@ from parsing.logger import get_logger
 from parsing.vector import Vector, SyntaxToken
 
 class FunctionOutput:
-    def __init__(self, name, vector):
+    def __init__(self, name, vector, label=None):
         self.name = name
         self.vector = vector
         self.filename = None
+        self.label = label
     
     def extract_vector(self):
         return self.vector
@@ -17,11 +18,30 @@ class FunctionOutput:
         return self.name, self.filename
     
     def split_context(self):
-        return self.extract_vector(), self.extract_name_and_filename()
+        return self.extract_vector(), self.label or self.extract_name_and_filename()
     
     @classmethod
     def split_context_list(cls, list_):
         return list(map(list, zip(*(fnc_outp.split_context() for fnc_outp in list_))))
+
+    @classmethod
+    def label_elements(self, outputs):
+        counter = 0
+
+        for output in outputs:
+            output.label = f'D{counter}'
+            counter += 1
+        
+    @classmethod
+    def summarize_elements(self, outputs):
+        counter = 0
+        strings = []
+
+        for output in outputs:
+            strings.append(f'D{counter}\n{output.vector.summary()}')
+            counter += 1
+        
+        return '\n'.join(strings)
     
     def __str__(self):
         return f'name: {self.name}, vector:{self.vector}'
@@ -174,7 +194,7 @@ class ASTVisitor(NodeVisitor):
         return vector
 
     def visit_Return(self, node):
-        result = self.visit(node.expr)
+        result = self.visit(node.expr) if node.expr is not None else Vector()
         return result if isinstance(result, Vector) else Vector()
     
     def visit_ID(self, node):
@@ -197,7 +217,7 @@ class ASTVisitor(NodeVisitor):
         iftrue_vector = self.visit(node.iftrue) or Vector()
         iffalse_vector = self.visit(node.iffalse) if node.iffalse is not None else Vector()
         
-        vector = Vector.merge(cond_vector, iftrue_vector, iffalse_vector)
+        vector = Vector.merge(vector, cond_vector, iftrue_vector, iffalse_vector)
 
         if node.iffalse is not None:
             vector.incremente_token(SyntaxToken.ELSE)
@@ -217,7 +237,6 @@ class ASTVisitor(NodeVisitor):
 
         vector = Vector.merge(init_vector, cond_vector, next_vector, statement_vector)
         vector.incremente_token(SyntaxToken.FOR)
-        vector.incremente_token(SyntaxToken.OP_EGL)
 
         return vector
     
@@ -226,7 +245,7 @@ class ASTVisitor(NodeVisitor):
         statement_vector = self.visit(node.stmt) or Vector()
 
         vector = Vector.merge(cond_vector, statement_vector)
-        vector.incremente_token(SyntaxToken.DO_WHILE)
+        vector.incremente_token(SyntaxToken.WHILE)
 
         return vector
 

@@ -11,8 +11,8 @@ class SyntaxToken(enum.Enum):
     OP_PPX, \
     OP_XMM, \
     OP_MMX, \
-    OP_EGL, \
-    OP_EEGL, \
+    OP_EQL, \
+    OP_EEQL, \
     OP_DIF, \
     OP_AND, \
     OP_OR, \
@@ -46,8 +46,8 @@ class Vector:
         '++': SyntaxToken.OP_PPX,
         'p--': SyntaxToken.OP_XMM,
         '--': SyntaxToken.OP_MMX,
-        '=': SyntaxToken.OP_EGL,
-        '==': SyntaxToken.OP_EEGL,
+        '=': SyntaxToken.OP_EQL,
+        '==': SyntaxToken.OP_EEQL,
         '!=': SyntaxToken.OP_DIF,
         '&&': SyntaxToken.OP_AND,
         '||': SyntaxToken.OP_OR,
